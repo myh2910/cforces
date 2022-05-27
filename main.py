@@ -1,3 +1,10 @@
+"""
+CForces
+=======
+
+A custom terminal simulator with python.
+
+"""
 import os
 import platform
 import shutil
@@ -15,7 +22,8 @@ CONFIG = {
 	'line_limit': 500,
 	'char_limit': 80,
 	'mode': 'codeforces',
-	'usaco_id': 'minleey1'
+	'usaco_id': 'minleey1',
+	'cpp_compiler': 'g++' 
 }
 
 HELP = {
@@ -31,6 +39,10 @@ HELP = {
 		'usage': "exec <command>",
 		'description': "Execute command on terminal."
 	},
+	'gcc': {
+		'usage': "gcc [directory]",
+		'description': "Compile the C++ file from the given project directory."
+	},
 	'help': {
 		'usage': "help [option]",
 		'description': "Print help message."
@@ -39,13 +51,13 @@ HELP = {
 		'usage': "ls [file]",
 		'description': "List directory contents."
 	},
-	'make': {
-		'usage': "make <file>",
-		'description': "Generate new directory <file> according to the current mode."
+	'code': {
+		'usage': "code <directory>",
+		'description': "Create a programming project according to the current mode."
 	},
 	'mode': {
 		'usage': "mode <mode>",
-		'description': "Compiling mode of the script. Default is 'codeforces'. Allowed values are 'codeforces' and 'usaco'."
+		'description': "Select compiling mode of the script. Default is 'codeforces'. Allowed values are 'codeforces' and 'usaco'."
 	},
 	'open': {
 		'usage': "open <file>",
@@ -54,6 +66,10 @@ HELP = {
 	'rm': {
 		'usage': "rm <file>",
 		'description': "Remove files or directories."
+	},
+	'run': {
+		'usage': "run [directory]",
+		'description': "Execute the compiled file from the given project directory."
 	}
 }
 
@@ -248,28 +264,76 @@ def open_file(path):
 		os.system('xfce4-terminal -x vim "%s"' % path)
 	return signal.DONE
 
-def create_file(path):
+def coding_project(path):
 	if not path:
-		show_help('make', "Enter the filename to create")
+		show_help('code', "Enter the project directory to open")
 		return signal.WARNING
+
+	project = os.path.split(path)[1]
+	cpp_file = os.path.join(path, "%s.cpp" % project)
+	if CONFIG['mode'] == 'codeforces':
+		input_file = os.path.join(path, "input.txt")
+		output_file = os.path.join(path, "output.txt")
+	elif CONFIG['mode'] == 'usaco':
+		input_file = os.path.join(path, "%s.in" % project)
+		output_file = os.path.join(path, "%s.out" % project)
 
 	if os.path.exists(path):
-		proceed = input("File path '%s' already exists; confirm to open it [y/N] \033[97m" % path).strip()
-		print('\033[0m', end='')
-		if proceed in ('y', 'Y'):
-			open_file(path)
-		return signal.WARNING
+		print("Opening project '%s'..." % path)
+	else:
+		print("Creating new project '%s'..." % path)
+		os.mkdir(path)
 
-	os.mkdir(path)
+		with open(cpp_file, 'w', newline='\n') as f:
+			if CONFIG['mode'] == 'codeforces':
+				f.write(TEMPLATE['codeforces'])
+			elif CONFIG['mode'] == 'usaco':
+				f.write(TEMPLATE['usaco'] % (CONFIG['usaco_id'], project, project, project))
 
-	file = os.path.join(path, "%s.cpp" % path)
-	with open(file, 'w', newline='\n') as f:
-		if CONFIG['mode'] == 'codeforces':
-			f.write(TEMPLATE['codeforces'])
-		elif CONFIG['mode'] == 'usaco':
-			f.write(TEMPLATE['usaco'] % (CONFIG['usaco_id'], path, path, path))
+		for file in (input_file, output_file):
+			with open(file, 'w', newline='\n') as f:
+				f.write("")
 
-	print("File '%s' created successfully" % file)
+	if platform.system() == 'Windows':
+		os.system('code "%s" "%s" "%s"' % (cpp_file, input_file, output_file))
+	elif platform.system() == 'Linux':
+		os.system('vim "%s" "%s" "%s"' % (cpp_file, input_file, output_file))
+	
+	os.chdir(path)
+	return signal.DONE
+
+def compile_project(path):
+	if not path:
+		path = "."
+	os.chdir(path)
+
+	if CONFIG['mode'] == 'codeforces':
+		os.system('%s -D _DEBUG *.cpp' % CONFIG['cpp_compiler'])
+	elif CONFIG['mode'] == 'usaco':
+		os.system('%s *.cpp' % CONFIG['cpp_compiler'])
+
+def run_project(path):
+	if not path:
+		path = "."
+	os.chdir(path)
+
+	if platform.system() == 'Windows':
+		path = os.path.join(path, "a.exe")
+	elif platform.system() == 'Linux':
+		path = os.path.join(path, "a.out")
+
+	try:
+		if not os.path.exists(path):
+			if CONFIG['mode'] == 'codeforces':
+				os.system('%s -D _DEBUG *.cpp' % CONFIG['cpp_compiler'])
+			elif CONFIG['mode'] == 'usaco':
+				os.system('%s *.cpp' % CONFIG['cpp_compiler'])
+		subprocess.Popen('"%s"' % path)
+
+	except Exception as e:
+		print("\n\033[1m\033[31mError:\033[0m %s" % e)
+		return signal.ERROR
+
 	return signal.DONE
 
 def remove_file(path):
@@ -300,8 +364,8 @@ def remove_file(path):
 			return signal.DONE
 		print("Operation has been cancelled")
 		return signal.WARNING
-	except OSError as err:
-		print(err)
+	except Exception as e:
+		print("\n\033[1m\033[31mError:\033[0m %s" % e)
 		return signal.ERROR
 
 def execute_cmd(command):
@@ -311,8 +375,8 @@ def execute_cmd(command):
 
 	try:
 		p = subprocess.Popen(command)
-	except FileNotFoundError as err:
-		print("\n\033[1m\033[31mError:\033[0m %s" % str(err))
+	except Exception as e:
+		print("\n\033[1m\033[31mError:\033[0m %s" % e)
 		return signal.ERROR
 
 	try:
@@ -322,9 +386,9 @@ def execute_cmd(command):
 		p.kill()
 		print("\n\033[0mProcess terminated by KeyboardInterrupt")
 		return signal.ERROR
-	except OSError as err:
+	except Exception as e:
 		p.kill()
-		print("\n\033[1m\033[31mError:\033[0m %s" % str(err))
+		print("\n\033[1m\033[31mError:\033[0m %s" % e)
 		return signal.ERROR
 
 	return signal.DONE
@@ -344,20 +408,24 @@ def translate_cmd(command):
 		return view_content(command[3:].strip())
 	if command.startswith('cd '):
 		return change_dir(command[2:].strip())
+	if command.startswith('code '):
+		return coding_project(command[4:].strip())
 	if command.startswith('exec '):
 		return execute_cmd(command[4:].strip())
+	if command.startswith('gcc '):
+		return compile_project(command[3:].strip())
 	if command.startswith('help '):
 		return show_help(command[4:].strip())
 	if command.startswith('ls '):
 		return list_files(command[2:].strip())
-	if command.startswith('make '):
-		return create_file(command[4:].strip())
 	if command.startswith('mode '):
 		return select_mode(command[4:].strip())
 	if command.startswith('open '):
 		return open_file(command[4:].strip())
 	if command.startswith('rm '):
 		return remove_file(command[2:].strip())
+	if command.startswith('run '):
+		return run_project(command[3:].strip())
 
 	show_help(err_msg="Unknown command: %s" % command.strip())
 	return signal.WARNING
