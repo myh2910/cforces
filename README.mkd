@@ -1,0 +1,17 @@
+# CForces
+
+```
+┌──────────────────────────────────────────────┐
+│      ____________                            │
+│     / ____/ ____/___  _____________  _____   │
+│    / /   / /_  / __ \/ ___/ ___/ _ \/ ___/   │
+│   / /___/ __/ / /_/ / /  / /__/  __(__  )    │
+│   \____/_/    \____/_/   \___/\___/____/     │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+A custom terminal simulator with python.
+
+## Settings
+Be sure to add the cloned repo to your PATH on Windows, or if you're on Linux add something like `alias cforces='/usr/bin/python3 .../main.py'` in your preferred terminal configuration file.
