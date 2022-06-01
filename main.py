@@ -55,6 +55,10 @@ HELP = {
 		'usage': "code <directory>",
 		'description': "Create a programming project according to the current mode."
 	},
+	'mkdir': {
+		'usage': "mkdir <directory>",
+		'description': "Make new directory."
+	},
 	'mode': {
 		'usage': "mode <mode>",
 		'description': "Select compiling mode of the script. Default is 'codeforces'. Allowed values are 'codeforces' and 'usaco'."
@@ -264,6 +268,22 @@ def open_file(path):
 		os.system('xfce4-terminal -x vim "%s"' % path)
 	return signal.DONE
 
+def create_dir(path):
+	if not path:
+		show_help('mkdir', "Enter the directory to make")
+		return signal.WARNING
+
+	if os.path.exists(path):
+		if os.path.isdir(path):
+			show_help('mkdir', "Directory '%s' already exists" % path)
+		else:
+			show_help('mkdir', "File path '%s' already exists" % path)
+		return signal.WARNING
+
+	print("Creating new directory '%s'..." % path)
+	os.mkdir(path)
+	return signal.DONE
+
 def coding_project(path):
 	if not path:
 		show_help('code', "Enter the project directory to open")
@@ -418,6 +438,8 @@ def translate_cmd(command):
 		return show_help(command[4:].strip())
 	if command.startswith('ls '):
 		return list_files(command[2:].strip())
+	if command.startswith('mkdir '):
+		return create_dir(command[5:].strip())	
 	if command.startswith('mode '):
 		return select_mode(command[4:].strip())
 	if command.startswith('open '):
