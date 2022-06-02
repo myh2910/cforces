@@ -317,8 +317,14 @@ def coding_project(path):
 	if platform.system() == 'Windows':
 		os.system('code "%s" "%s" "%s"' % (cpp_file, input_file, output_file))
 	elif platform.system() == 'Linux':
-		os.system('vim "%s" "%s" "%s"' % (cpp_file, input_file, output_file))
-	
+		if CONFIG['mode'] == 'codeforces':
+			lnum = 10
+		elif CONFIG['mode'] == 'usaco':
+			lnum = 13
+		os.system(
+			'xfce4-terminal -x vim +\'syntax on | set autoread | call feedkeys("\\<C-W>H")\' +%d -o "%s" "%s" "%s"'
+			% (lnum, cpp_file, input_file, output_file))
+
 	os.chdir(path)
 	return signal.DONE
 
@@ -348,7 +354,7 @@ def run_project(path):
 				os.system('%s -D _DEBUG *.cpp' % CONFIG['cpp_compiler'])
 			elif CONFIG['mode'] == 'usaco':
 				os.system('%s *.cpp' % CONFIG['cpp_compiler'])
-		subprocess.Popen('"%s"' % path)
+		subprocess.Popen(path)
 
 	except Exception as e:
 		print("\n\033[1m\033[31mError:\033[0m %s" % e)
