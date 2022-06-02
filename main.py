@@ -320,10 +320,12 @@ def coding_project(path):
 		lnum = 13
 
 	if platform.system() == 'Windows':
-		os.system('code -n -g "%s:%d:2" -- "%s" "%s"' % (cpp_file, lnum, input_file, output_file))
+		os.system(
+			'code -n -g "%s:%d:2" -- "%s" "%s"'
+			% (cpp_file, lnum, input_file, output_file))
 	elif platform.system() == 'Linux':
 		os.system(
-			'xfce4-terminal -x vim +\'startinsert | syntax on | set autoread | call feedkeys("\\<C-W>H")\' +%d -o "%s" "%s" "%s"'
+			'xfce4-terminal -x vim +\'syntax on | set autoread | call feedkeys("\\<C-W>HI")\' +%d -o "%s" "%s" "%s"'
 			% (lnum, cpp_file, input_file, output_file))
 
 	os.chdir(path)
