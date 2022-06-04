@@ -21,3 +21,7 @@ A custom terminal simulator with python.
 
 - Be sure to add the cloned repo to your PATH on Windows, or if you're on Linux add something like `alias cforces='/usr/bin/python3 .../main.py'` in your preferred terminal configuration file.
 - If you're using Avast Antivirus, add `*\a.exe` as an exception, so Avast won't scan it.
+
+## To-do
+
+- [ ] Wrap all paths with `pathlib.Path()`.
