@@ -6,24 +6,25 @@ A custom terminal simulator with python.
 
 """
 import os
+import pathlib
 import platform
 import shutil
 import subprocess
 import time
 
-from pathlib import Path
+import keyboard
+from timeit import default_timer
 
 __author__ = 'Yohan Min'
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 CONFIG = {
 	'auto': True,
-	'encodings': ('utf-8', 'euc-kr', 'windows-1250', 'windows-1252'),
+	'encodings': ('utf-8', 'euc-kr'),
 	'line_limit': 500,
 	'char_limit': 80,
 	'mode': 'codeforces',
-	'usaco_id': 'minleey1',
-	'cpp_compiler': 'g++' 
+	'cpp_compiler': 'g++'
 }
 
 HELP = {
@@ -77,8 +78,9 @@ HELP = {
 	}
 }
 
-TEMPLATE = {
-	'codeforces': """#include <bits/stdc++.h>
+MODE = {
+	'codeforces': {
+		'template': """#include <bits/stdc++.h>
 using namespace std;
 
 int main() {
@@ -90,9 +92,11 @@ int main() {
 \t
 	return 0;
 }
-""",
-	'usaco': """/*
-ID: %s
+"""
+	},
+	'usaco': {
+		'template': """/*
+ID: minleey1
 TASK: %s
 LANG: C++
 */
@@ -107,6 +111,11 @@ int main() {
 	return 0;
 }
 """
+	}
+}
+
+_cache = {
+	'mode': {}
 }
 
 class signal:
@@ -186,11 +195,12 @@ def view_content(path):
 
 def select_mode(mode):
 	if not mode:
-		show_help('mode', "Enter the name of the mode")
-		return signal.WARNING
+		print("Current mode is %s" % CONFIG['mode'])
+		return signal.DONE
 
-	if mode in ('codeforces', 'usaco'):
+	if mode in MODE.keys():
 		CONFIG['mode'] = mode
+		_cache['mode'][os.getcwd()] = mode
 		print("Mode %s selected" % mode)
 		return signal.DONE
 
@@ -199,7 +209,7 @@ def select_mode(mode):
 
 def change_dir(path):
 	if not path:
-		return change_dir(Path.home())
+		return change_dir(pathlib.Path.home())
 
 	if not os.path.exists(path):
 		show_help('cd', "Directory '%s' doesn't exist" % path)
@@ -306,9 +316,9 @@ def coding_project(path):
 
 		with open(cpp_file, 'w', newline='\n') as f:
 			if CONFIG['mode'] == 'codeforces':
-				f.write(TEMPLATE['codeforces'])
+				f.write(MODE['codeforces']['template'])
 			elif CONFIG['mode'] == 'usaco':
-				f.write(TEMPLATE['usaco'] % (CONFIG['usaco_id'], project, project, project))
+				f.write(MODE['usaco']['template'] % (project, project, project))
 
 		for file in (input_file, output_file):
 			with open(file, 'w', newline='\n') as f:
@@ -323,6 +333,12 @@ def coding_project(path):
 		os.system(
 			'code -n -g "%s:%d:2" -- "%s" "%s"'
 			% (cpp_file, lnum, input_file, output_file))
+		time.sleep(0.5)
+		keyboard.press_and_release('ctrl+pagedown,ctrl+alt+right,ctrl+pageup,ctrl+alt+right,ctrl+alt+right')
+		keyboard.press_and_release('ctrl+k,down')
+		time.sleep(0.5)
+		keyboard.press_and_release('ctrl+pagedown')
+
 	elif platform.system() == 'Linux':
 		os.system(
 			'xfce4-terminal -x vim +\'syntax on | set autoread | call feedkeys("\\<C-W>HI")\' +%d -o "%s" "%s" "%s"'
@@ -357,7 +373,10 @@ def run_project(path):
 				os.system('%s -D _DEBUG *.cpp' % CONFIG['cpp_compiler'])
 			elif CONFIG['mode'] == 'usaco':
 				os.system('%s *.cpp' % CONFIG['cpp_compiler'])
+		elapsed_time = -default_timer()
 		subprocess.Popen(path)
+		elapsed_time += default_timer()
+		print("Elapsed time: %.3f" % elapsed_time)
 
 	except Exception as e:
 		print("\n\033[1m\033[31mError:\033[0m %s" % e)
@@ -461,7 +480,30 @@ def translate_cmd(command):
 	show_help(err_msg="Unknown command: %s" % command.strip())
 	return signal.WARNING
 
-def start_cforces():
+def init():
+	for path, mode in _cache['mode'].items():
+		if os.getcwd() == path:
+			CONFIG['mode'] = mode
+			return signal.DONE
+
+	cwd = pathlib.Path(os.getcwd()).as_posix()
+	if "Informatics/baekjoon" in cwd:
+		CONFIG['mode'] = 'codeforces'
+	elif "Informatics/codeforces" in cwd:
+		CONFIG['mode'] = 'codeforces'
+	elif "Informatics/cses" in cwd:
+		CONFIG['mode'] = 'codeforces'
+	elif "Informatics/omegaup" in cwd:
+		CONFIG['mode'] = 'codeforces'
+	elif "Informatics/projecteuler" in cwd:
+		CONFIG['mode'] = 'codeforces'
+	elif "Informatics/yandex" in cwd:
+		CONFIG['mode'] = 'codeforces'
+	elif "Informatics/usaco" in cwd:
+		CONFIG['mode'] = 'usaco'
+	return signal.DONE
+
+def main():
 	title = " CForces %s " % __version__
 	k = 46 - len(title)
 	print(
@@ -479,6 +521,7 @@ def start_cforces():
 		import readline
 
 	while True:
+		init()
 		command = input("\033[92m%s \033[1m>>\033[0m\033[97m " % os.getcwd()).strip()
 		print('\033[0m', end='')
 		output = translate_cmd(command)
@@ -488,6 +531,6 @@ def start_cforces():
 
 if __name__ == '__main__':
 	try:
-		start_cforces()
+		main()
 	except KeyboardInterrupt:
 		print("\n\033[0mTerminating CForces...")
