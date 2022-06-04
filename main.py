@@ -376,7 +376,7 @@ def run_project(path):
 		elapsed_time = -default_timer()
 		subprocess.Popen(path)
 		elapsed_time += default_timer()
-		print("Elapsed time: %.3f" % elapsed_time)
+		print("Elapsed time: %.3f seconds" % elapsed_time)
 
 	except Exception as e:
 		print("\n\033[1m\033[31mError:\033[0m %s" % e)
