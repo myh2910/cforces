@@ -300,19 +300,21 @@ def coding_project(path):
 		return signal.WARNING
 
 	project = os.path.split(path)[1]
-	cpp_file = os.path.join(path, "%s.cpp" % project)
+	cpp_file = "%s.cpp" % project
 	if CONFIG['mode'] == 'codeforces':
-		input_file = os.path.join(path, "input.txt")
-		output_file = os.path.join(path, "output.txt")
+		input_file = "input.txt"
+		output_file = "output.txt"
 	elif CONFIG['mode'] == 'usaco':
-		input_file = os.path.join(path, "%s.in" % project)
-		output_file = os.path.join(path, "%s.out" % project)
+		input_file = "%s.in" % project
+		output_file = "%s.out" % project
 
 	if os.path.exists(path):
 		print("Opening project '%s'..." % path)
+		os.chdir(path)
 	else:
 		print("Creating new project '%s'..." % path)
 		os.mkdir(path)
+		os.chdir(path)
 
 		with open(cpp_file, 'w', newline='\n') as f:
 			if CONFIG['mode'] == 'codeforces':
@@ -344,7 +346,6 @@ def coding_project(path):
 			'xfce4-terminal -x vim +\'syntax on | set autoread | call feedkeys("\\<C-W>HI")\' +%d -o "%s" "%s" "%s"'
 			% (lnum, cpp_file, input_file, output_file))
 
-	os.chdir(path)
 	return signal.DONE
 
 def compile_project(path):
