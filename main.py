@@ -338,8 +338,13 @@ def coding_project(path):
 		time.sleep(0.5)
 		keyboard.press_and_release('ctrl+pagedown,ctrl+alt+right,ctrl+pageup,ctrl+alt+right,ctrl+alt+right')
 		keyboard.press_and_release('ctrl+k,down')
-		time.sleep(0.5)
+		time.sleep(0.7)
 		keyboard.press_and_release('ctrl+pagedown')
+		# keyboard.press_and_release('ctrl+shift+`')
+		# time.sleep(3.5)
+		# keyboard.write('cd "%s" | clear' % os.getcwd())
+		# keyboard.press_and_release('enter')
+		# os.chdir("..")
 
 	elif platform.system() == 'Linux':
 		os.system(
