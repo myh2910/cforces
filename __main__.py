@@ -11,12 +11,11 @@ import platform
 import shutil
 import subprocess
 import time
-
-import keyboard
 from timeit import default_timer
 
-__author__ = 'Yohan Min'
-__version__ = '1.1.1'
+import keyboard
+
+from . import __version__
 
 CONFIG = {
 	'auto': True,
@@ -154,7 +153,7 @@ def show_help(option=None, err_msg=None):
 
 def output_line(i, limit, line):
 	# TODO: Print single line on multiple lines of length CONFIG['char_limit']
-	line = line.replace('\t', '\033[36m| \033[0m')
+	line = line.replace("\t", "\033[36m| \033[0m")
 	print("\033[34m│ %s │ \033[0m%s" % (str(i + 1).rjust(limit), line))
 
 def view_content(path):
@@ -172,7 +171,7 @@ def view_content(path):
 
 	for e in CONFIG['encodings']:
 		try:
-			with open(path, 'r', encoding=e) as f:
+			with open(path, "r", encoding=e) as f:
 				content = f.read().splitlines()
 				total = sum(1 for _ in content)
 				limit = len(str(total))
@@ -181,7 +180,7 @@ def view_content(path):
 				for i, line in enumerate(content):
 					if i >= CONFIG['line_limit']:
 						k = limit + 3
-						print('\033[34m%s⋮%s\033[0m' % (' ' * ((k + 1) // 2), ' ' * (k // 2)))
+						print("\033[34m%s⋮%s\033[0m" % (" " * ((k + 1) // 2), " " * (k // 2)))
 						output_line(total, limit, content[-1])
 						break
 					output_line(i, limit, line)
@@ -233,13 +232,13 @@ def scan_files(path):
 	for file in os.scandir(path):
 		cnt += 1
 		if file.is_dir():
-			color = '\033[96m'
-			filename = file.name + ('\\' if platform.system() == 'Windows' else '/')
+			color = "\033[96m"
+			filename = file.name + ("\\" if platform.system() == "Windows" else "/")
 		else:
-			color = '\033[35m'
+			color = "\033[35m"
 			filename = file.name
 		print("\033[34m%s─ %s%s\033[0m"
-			% ('╰' if cnt == total else '├', color, filename))
+			% ("╰" if cnt == total else "├", color, filename))
 
 def list_files(path):
 	if not path:
@@ -316,14 +315,14 @@ def coding_project(path):
 		os.mkdir(path)
 		os.chdir(path)
 
-		with open(cpp_file, 'w', newline='\n') as f:
+		with open(cpp_file, "w", newline="\n") as f:
 			if CONFIG['mode'] == 'codeforces':
 				f.write(MODE['codeforces']['template'])
 			elif CONFIG['mode'] == 'usaco':
 				f.write(MODE['usaco']['template'] % (project, project, project))
 
 		for file in (input_file, output_file):
-			with open(file, 'w', newline='\n') as f:
+			with open(file, "w", newline="\n") as f:
 				f.write("")
 
 	if CONFIG['mode'] == 'codeforces':
@@ -331,22 +330,22 @@ def coding_project(path):
 	elif CONFIG['mode'] == 'usaco':
 		lnum = 13
 
-	if platform.system() == 'Windows':
+	if platform.system() == "Windows":
 		os.system(
 			'code -n -g "%s:%d:2" -- "%s" "%s"'
 			% (cpp_file, lnum, input_file, output_file))
 		time.sleep(0.5)
-		keyboard.press_and_release('ctrl+pagedown,ctrl+alt+right,ctrl+pageup,ctrl+alt+right,ctrl+alt+right')
-		keyboard.press_and_release('ctrl+k,down')
+		keyboard.press_and_release("ctrl+pagedown,ctrl+alt+right,ctrl+pageup,ctrl+alt+right,ctrl+alt+right")
+		keyboard.press_and_release("ctrl+k,down")
 		time.sleep(0.7)
-		keyboard.press_and_release('ctrl+pagedown')
-		# keyboard.press_and_release('ctrl+shift+`')
+		keyboard.press_and_release("ctrl+pagedown")
+		# keyboard.press_and_release("ctrl+shift+`")
 		# time.sleep(3.5)
-		# keyboard.write('cd "%s" | clear' % os.getcwd())
-		# keyboard.press_and_release('enter')
+		# keyboard.write("cd \"%s\" | clear" % os.getcwd())
+		# keyboard.press_and_release("enter")
 		# os.chdir("..")
 
-	elif platform.system() == 'Linux':
+	elif platform.system() == "Linux":
 		os.system(
 			'xfce4-terminal -x vim +\'syntax on | set autoread | call feedkeys("\\<C-W>HI")\' +%d -o "%s" "%s" "%s"'
 			% (lnum, cpp_file, input_file, output_file))
@@ -359,26 +358,26 @@ def compile_project(path):
 	os.chdir(path)
 
 	if CONFIG['mode'] == 'codeforces':
-		os.system('%s -D _DEBUG *.cpp' % CONFIG['cpp_compiler'])
+		os.system("%s -D _DEBUG *.cpp" % CONFIG['cpp_compiler'])
 	elif CONFIG['mode'] == 'usaco':
-		os.system('%s *.cpp' % CONFIG['cpp_compiler'])
+		os.system("%s *.cpp" % CONFIG['cpp_compiler'])
 
 def run_project(path):
 	if not path:
 		path = "."
 	os.chdir(path)
 
-	if platform.system() == 'Windows':
+	if platform.system() == "Windows":
 		path = os.path.join(path, "a.exe")
-	elif platform.system() == 'Linux':
+	elif platform.system() == "Linux":
 		path = os.path.join(path, "a.out")
 
 	try:
 		if not os.path.exists(path):
 			if CONFIG['mode'] == 'codeforces':
-				os.system('%s -D _DEBUG *.cpp' % CONFIG['cpp_compiler'])
+				os.system("%s -D _DEBUG *.cpp" % CONFIG['cpp_compiler'])
 			elif CONFIG['mode'] == 'usaco':
-				os.system('%s *.cpp' % CONFIG['cpp_compiler'])
+				os.system("%s *.cpp" % CONFIG['cpp_compiler'])
 		elapsed_time = -default_timer()
 		subprocess.Popen(path)
 		elapsed_time += default_timer()
@@ -411,8 +410,8 @@ def remove_file(path):
 
 	try:
 		proceed = input("Directory '%s' is not empty; confirm to continue [y/N] \033[97m" % path).strip()
-		print('\033[0m', end='')
-		if proceed in ('y', 'Y'):
+		print("\033[0m", end="")
+		if proceed in ("y", "Y"):
 			shutil.rmtree(path)
 			print("Directory '%s' deleted successfully" % path)
 			return signal.DONE
@@ -451,36 +450,36 @@ def translate_cmd(command):
 	if not command:
 		show_help(err_msg="Enter the command")
 		return signal.WARNING
-	if command in ('exit', 'quit', 'q'):
+	if command in ("exit", "quit", "q"):
 		return signal.EXIT
-	if command in ('clear', 'cls'):
-		os.system('cls' if platform.system() == 'Windows' else 'clear')
+	if command in ("clear", "cls"):
+		os.system("cls" if platform.system() == "Windows" else "clear")
 		return signal.DONE
 
-	command += ' '
-	if command.startswith('cat '):
+	command += " "
+	if command.startswith("cat "):
 		return view_content(command[3:].strip())
-	if command.startswith('cd '):
+	if command.startswith("cd "):
 		return change_dir(command[2:].strip())
-	if command.startswith('code '):
+	if command.startswith("code "):
 		return coding_project(command[4:].strip())
-	if command.startswith('exec '):
+	if command.startswith("exec "):
 		return execute_cmd(command[4:].strip())
-	if command.startswith('gcc '):
+	if command.startswith("gcc "):
 		return compile_project(command[3:].strip())
-	if command.startswith('help '):
+	if command.startswith("help "):
 		return show_help(command[4:].strip())
-	if command.startswith('ls '):
+	if command.startswith("ls "):
 		return list_files(command[2:].strip())
-	if command.startswith('mkdir '):
+	if command.startswith("mkdir "):
 		return create_dir(command[5:].strip())	
-	if command.startswith('mode '):
+	if command.startswith("mode "):
 		return select_mode(command[4:].strip())
-	if command.startswith('open '):
+	if command.startswith("open "):
 		return open_file(command[4:].strip())
-	if command.startswith('rm '):
+	if command.startswith("rm "):
 		return remove_file(command[2:].strip())
-	if command.startswith('run '):
+	if command.startswith("run "):
 		return run_project(command[3:].strip())
 
 	show_help(err_msg="Unknown command: %s" % command.strip())
@@ -509,11 +508,7 @@ def init():
 		CONFIG['mode'] = 'usaco'
 	return signal.DONE
 
-def main():
-	title = " CForces %s " % __version__
-	k = 46 - len(title)
-	print(
-		"""\033[36m┌%s\033[97m%s\033[36m%s┐
+ASCII = """\033[36m┌%s\033[97m%s\033[36m%s┐
 │%s      ____________                            %s│
 │%s     / ____/ ____/___  _____________  _____   %s│
 │%s    / /   / /_  / __ \/ ___/ ___/ _ \/ ___/   %s│
@@ -521,21 +516,26 @@ def main():
 │%s   \____/_/    \____/_/   \___/\___/____/     %s│
 │%s                                              %s│
 └──────────────────────────────────────────────┘\033[0m"""
-		% ('─' * ((k + 1) // 2), title, '─' * (k // 2), *('\033[93m', '\033[36m') * 6))
 
-	if platform.system() == 'Linux':
+def main():
+	title = " CForces %s " % __version__
+	k = 46 - len(title)
+	print(ASCII % (
+		"─" * ((k + 1) // 2), title, "─" * (k // 2), *("\033[93m", "\033[36m") * 6))
+
+	if platform.system() == "Linux":
 		import readline
 
 	while True:
 		init()
 		command = input("\033[92m%s \033[1m>>\033[0m\033[97m " % os.getcwd()).strip()
-		print('\033[0m', end='')
+		print("\033[0m", end="")
 		output = translate_cmd(command)
 		if output == 3:
 			print("Exiting CForces...")
 			break
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 	try:
 		main()
 	except KeyboardInterrupt:
