@@ -96,7 +96,6 @@ def show_help(option=None, err_msg=None):
 
 def output_line(i, limit, line):
     # TODO: Print single line on multiple lines of length CONFIG['char_limit']
-    line = line.replace("\t", "\033[36m| \033[0m")
     print("\033[34m│ %s │ \033[0m%s" % (str(i + 1).rjust(limit), line))
 
 
