@@ -309,7 +309,7 @@ def coding_project(path):
 
     elif platform.system() == "Linux":
         os.system(
-            'xfce4-terminal -x nvim +\'syntax on | set autoread | call feedkeys("\\<C-W>HI")\' +%d -o "%s" "%s" "%s"'
+            'xfce4-terminal -x nvim +\'sleep 100m | syntax on | set autoread | call feedkeys("\\<C-W>HI")\' +%d -o "%s" "%s" "%s"'
             % (lnum, cpp_file, input_file, output_file)
         )
 
@@ -491,6 +491,9 @@ ASCII = """\033[36m┌%s\033[97m%s\033[36m%s┐
 
 
 def main():
+    if platform.system() == "Linux":
+        import readline
+
     title = " CForces %s " % __version__
     k = 46 - len(title)
     print(
