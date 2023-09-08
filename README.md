@@ -21,7 +21,7 @@ A custom terminal simulator with python.
 
 - This directory should be included under PYTHONPATH, and invoked by
   `python -m cforces`.
-- If you're using any antivirus software, add `*\a.exe` as an exception.
+- If you are using any antivirus software, add `*\a.exe` as an exception.
 
 ## To-do
 
